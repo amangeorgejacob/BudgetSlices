@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BudgetSlices - Your Money, With Purpose</title>
+  <style>
+    :root {
+      --bg-main: #f4f3ec;
+      --card-bg: #fbfaf5;
+      --card-border: #eee9dc;
+      --text-dark: #1e2d24;
+      --text-muted: #798379;
+      --green-dark: #2d5a49;
+      --green-accent: #3b6b57;
+      --green-light-bg: #e5f0ea;
+      --yellow-accent: #dca052;
+      --red-light-bg: #fde8e8;
+      --red-text: #bd3232;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+      padding: 40px 20px 80px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background-color: var(--green-dark);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .logo-text h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .logo-text span {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .badge-saved {
+      background-color: white;
+      border: 1px solid #e2ded4;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-saved::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background-color: #55b685;
+      border-radius: 50%;
+    }
+
+    /* Hero Banner */
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+      margin-top: 10px;
+    }
+
+    .hero-left {
+      max-width: 500px;
+    }
+
+    .sub-heading {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-left h2 {
+      font-size: 3rem;
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: -1px;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+    }
+
+    .hero-left p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .card-dark {
+      background-color: var(--green-dark);
+      color: white;
+      padding: 28px;
+      border-radius: 20px;
+      min-width: 320px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+
+    .card-dark-header {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .amount-display {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .card-dark-footer {
+      font-size: 0.85rem;
+      opacity: 0.75;
+    }
+
+    /* Stat Cards Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+
+    .stat-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .plan-status-value {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green-dark);
+    }
+
+    /* Main Section: Categories & Controls */
+    .section-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-header h3 {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .badge-status {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-status.success {
+      background-color: var(--green-light-bg);
+      color: var(--green-dark);
+    }
+
+    .badge-status.warning {
+      background-color: var(--red-light-bg);
+      color: var(--red-text);
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .category-item {
+      background-color: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .cat-name-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 200px;
+    }
+
+    .cat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .cat-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .slider-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .custom-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e8e4d9;
+      outline: none;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid currentColor;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #b0b5af;
+    }
+
+    .cat-value-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-align: right;
+    }
+
+    .cat-percent {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .cat-percent span {
+      font-size: 0.8rem;
+    }
+
+    .cat-dollar {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #b8bdba;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-delete:hover {
+      color: var(--red-text);
+    }
+
+    /* Add Category Bar */
+    .add-category-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-category {
+      flex: 1;
+      background-color: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.9rem;
+      outline: none;
+      color: var(--text-dark);
+    }
+
+    .input-category::placeholder {
+      color: #c4c8c3;
+    }
+
+    .btn-add {
+      background-color: #92a49b;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 24px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-add:hover {
+      background-color: var(--green-accent);
+    }
+
+    /* Chart Section */
+    .chart-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-text {
+      position: absolute;
+      text-align: center;
+    }
+
+    .canvas-text span {
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .canvas-text strong {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .breakdown-table {
+      flex: 1;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #ebe6da;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+
+    .breakdown-right {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .breakdown-percent {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .breakdown-amount {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+        </div>
+        <div class="logo-text">
+          <h1>BudgetSlices</h1>
+          <span>YOUR MONEY, WITH PURPOSE</span>
+        </div>
+      </div>
+      <div class="badge-saved">Saved on this device</div>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-left">
+        <div class="sub-heading">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18m9-9H3"/></svg>
+          A CLEARER WAY TO PLAN
+        </div>
+        <h2>Give every dollar a place to land.</h2>
+        <p>Start with what you have. Shape it into a plan that feels right for your life.</p>
+      </div>
+      
+      <!-- Total Available Card -->
+      <div class="card-dark" id="incomeCard" title="Click to change your take-home amount">
+        <div class="card-dark-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5H10.5a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3H9"/></svg>
+          AVAILABLE TO PLAN
+        </div>
+        <div class="amount-display" id="totalIncomeDisplay">$ 65.82</div>
+        <div class="card-dark-footer">Your take-home amount for this plan (click to edit)</div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">ALLOCATED</div>
+        <div class="stat-value" id="allocatedPercentDisplay">100.0%</div>
+        <div class="stat-sub" id="allocatedAmountDisplay">$65.82 assigned</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">STILL AVAILABLE</div>
+        <div class="stat-value" id="availableAmountDisplay">$0.00</div>
+        <div class="stat-sub" id="availableStatusSub">Not assigned yet</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">PLAN STATUS</div>
+        <div class="stat-value plan-status-value">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="planStatusText">Balanced</span>
+        </div>
+        <div class="stat-sub" id="planStatusSub">Every dollar has a home</div>
+      </div>
+    </div>
+
+    <!-- Category Adjustment Section -->
+    <div class="section-card">
+      <div class="sub-heading">YOUR MONTHLY PLAN</div>
+      <div class="section-header">
+        <h3>Adjust your categories</h3>
+        <div class="badge-status success" id="statusBadge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span id="statusBadgeText">Exactly allocated</span>
+        </div>
+      </div>
+
+      <!-- Categories Container -->
+      <div class="category-list" id="categoryContainer"></div>
+
+      <!-- Add New Category Input -->
+      <div class="add-category-row">
+        <input type="text" class="input-category" id="newCatName" placeholder="Name a new category..." />
+        <button class="btn-add" id="addCatBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add category
+        </button>
+      </div>
+    </div>
+
+    <!-- Donut Chart & Overview Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <div class="sub-heading">AT A GLANCE</div>
+          <h3>Your money, mapped out</h3>
+        </div>
+        <div class="badge-saved" id="totalSummaryBadge" style="border-radius: 12px; font-weight: 600; color: var(--text-dark); font-size: 0.9rem;">
+          $65.82 total
+        </div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">A simple view of where your plan is going.</p>
+
+      <div class="chart-container">
+        <div class="canvas-wrapper">
+          <canvas id="donutChart" width="220" height="220"></canvas>
+          <div class="canvas-text">
+            <span>PLANNED</span>
+            <strong id="donutCenterPercent">100%</strong>
+          </div>
+        </div>
+
+        <div class="breakdown-table" id="breakdownList"></div>
+      </div>
+    </div>
+
+    <footer>A little more clarity, one dollar at a time.</footer>
+  </div>
+
+  <script>
+    // Initial State & Color Palette setup
+    const PALETTE = ["#2d5a49", "#dca052", "#5c79a0", "#8e6da0", "#a05c68"];
+
+    let state = {
+      income: 65.82,
+      categories: [
+        { id: '1', name: 'Invesments', percent: 65, color: '#2d5a49' },
+        { id: '2', name: 'Fun stuff', percent: 35, color: '#dca052' }
+      ]
+    };
+
+    // Load Saved State from localStorage
+    function loadSavedData() {
+      const saved = localStorage.getItem('budget_slices_data');
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+        } catch(e) {
+          console.error("Could not parse saved local state", e);
+        }
+      }
+    }
+
+    // Save State to localStorage
+    function saveState() {
+      localStorage.setItem('budget_slices_data', JSON.stringify(state));
+    }
+
+    // DOM Elements
+    const incomeCard = document.getElementById('incomeCard');
+    const totalIncomeDisplay = document.getElementById('totalIncomeDisplay');
+    const allocatedPercentDisplay = document.getElementById('allocatedPercentDisplay');
+    const allocatedAmountDisplay = document.getElementById('allocatedAmountDisplay');
+    const availableAmountDisplay = document.getElementById('availableAmountDisplay');
+    const availableStatusSub = document.getElementById('availableStatusSub');
+    const planStatusText = document.getElementById('planStatusText');
+    const planStatusSub = document.getElementById('planStatusSub');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusBadgeText = document.getElementById('statusBadgeText');
+    const categoryContainer = document.getElementById('categoryContainer');
+    const breakdownList = document.getElementById('breakdownList');
+    const totalSummaryBadge = document.getElementById('totalSummaryBadge');
+    const donutCenterPercent = document.getElementById('donutCenterPercent');
+    const newCatNameInput = document.getElementById('newCatName');
+    const addCatBtn = document.getElementById('addCatBtn');
+    const canvas = document.getElementById('donutChart');
+    const ctx = canvas.getContext('2d');
+
+    // Change Income prompt
+    incomeCard.addEventListener('click', () => {
+      const val = prompt("Enter your monthly take-home income ($):", state.income);
+      if (val !== null && !isNaN(val) && parseFloat(val) >= 0) {
+        state.income = parseFloat(val);
+        saveState();
+        render();
+      }
+    });
+
+    // Add category handler
+    addCatBtn.addEventListener('click', () => {
+      const name = newCatNameInput.value.trim();
+      if (!name) return;
+
+      const color = PALETTE[state.categories.length % PALETTE.length];
+      state.categories.push({
+        id: Date.now().toString(),
+        name: name,
+        percent: 0,
+        color: color
+      });
+
+      newCatNameInput.value = '';
+      saveState();
+      render();
+    });
+
+    // Main App Render Function
+    function render() {
+      // 1. Calculate totals
+      const totalPercent = state.categories.reduce((acc, c) => acc + c.percent, 0);
+      const allocatedDollars = (state.income * (totalPercent / 100));
+      const remainingPercent = 100 - totalPercent;
+      const remainingDollars = state.income - allocatedDollars;
+
+      // 2. Render Hero & Stats
+      totalIncomeDisplay.textContent = `$ ${state.income.toFixed(2)}`;
+      allocatedPercentDisplay.textContent = `${totalPercent.toFixed(1)}%`;
+      allocatedAmountDisplay.textContent = `$${allocatedDollars.toFixed(2)} assigned`;
+      availableAmountDisplay.textContent = `$${Math.abs(remainingDollars).toFixed(2)}`;
+      totalSummaryBadge.textContent = `$${state.income.toFixed(2)} total`;
+      donutCenterPercent.textContent = `${totalPercent}%`;
+
+      if (totalPercent === 100) {
+        statusBadge.className = "badge-status success";
+        statusBadgeText.textContent = "Exactly allocated";
+        planStatusText.textContent = "Balanced";
+        planStatusSub.textContent = "Every dollar has a home";
+        availableStatusSub.textContent = "Not assigned yet";
+      } else if (totalPercent > 100) {
+        statusBadge.className = "badge-status warning";
+        statusBadgeText.textContent = "Over-allocated";
+        planStatusText.textContent = "Over budget";
+        planStatusSub.textContent = "You allocated more than 100%";
+        availableStatusSub.textContent = "Over plan limit";
+      } else {
+        statusBadge.className = "badge-status success";
+        statusBadgeText.textContent = "Under-allocated";
+        planStatusText.textContent = "Unassigned";
+        planStatusSub.textContent = "You still have room left";
+        availableStatusSub.textContent = "Not assigned yet";
+      }
+
+      // 3. Render Slider list
+      categoryContainer.innerHTML = '';
+      state.categories.forEach((cat, index) => {
+        const catDollars = (state.income * (cat.percent / 100)).toFixed(2);
+        
+        const item = document.createElement('div');
+        item.className = 'category-item';
+        item.innerHTML = `
+          <div class="cat-name-group">
+            <div class="cat-dot" style="background-color: ${cat.color}"></div>
+            <div class="cat-name">${cat.name}</div>
+          </div>
+          <div class="slider-group">
+            <input type="range" class="custom-slider" min="0" max="100" value="${cat.percent}" style="color: ${cat.color}">
+            <div class="slider-labels">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+          </div>
+          <div class="cat-value-group">
+            <div>
+              <div class="cat-percent">${cat.percent}<span>%</span></div>
+              <div class="cat-dollar">$${catDollars}</div>
+            </div>
+            <button class="btn-delete" title="Delete category">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        `;
+
+        // Style the slider background dynamically
+        const slider = item.querySelector('.custom-slider');
+        const updateTrack = (val) => {
+          slider.style.background = `linear-gradient(to right, ${cat.color} 0%, ${cat.color} ${val}%, #e8e4d9 ${val}%, #e8e4d9 100%)`;
+        };
+        updateTrack(cat.percent);
+
+        // Slider events
+        slider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          cat.percent = val;
+          updateTrack(val);
+          saveState();
+          render();
+        });
+
+        // Delete events
+        item.querySelector('.btn-delete').addEventListener('click', () => {
+          state.categories.splice(index, 1);
+          saveState();
+          render();
+        });
+
+        categoryContainer.appendChild(item);
+      });
+
+      // 4. Render Breakdown Table
+      breakdownList.innerHTML = '';
+      state.categories.forEach(cat => {
+        const amt = (state.income * (cat.percent / 100)).toFixed(2);
+        const row = document.createElement('div');
+        row.className = 'breakdown-row';
+        row.innerHTML = `
+          <div class="breakdown-left">
+            <div class="cat-dot" style="background-color: ${cat.color}"></div>
+            <span>${cat.name}</span>
+          </div>
+          <div class="breakdown-right">
+            <span class="breakdown-percent">${cat.percent}%</span>
+            <span class="breakdown-amount">$${amt}</span>
+          </div>
+        `;
+        breakdownList.appendChild(row);
+      });
+
+      // Unallocated Breakdown Row
+      const unallocatedRow = document.createElement('div');
+      unallocatedRow.className = 'breakdown-row';
+      unallocatedRow.style.opacity = '0.6';
+      unallocatedRow.innerHTML = `
+        <div class="breakdown-left">
+          <span style="margin-left: 22px;">Unallocated</span>
+        </div>
+        <div class="breakdown-right">
+          <span class="breakdown-amount">$${Math.max(0, remainingDollars).toFixed(2)}</span>
+        </div>
+      `;
+      breakdownList.appendChild(unallocatedRow);
+
+      // 5. Draw Donut Chart
+      drawChart();
+    }
+
+    // HTML5 Canvas Donut Chart Rendering
+    function drawChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const outerRadius = 90;
+      const innerRadius = 64;
+
+      let currentAngle = -Math.PI / 2;
+
+      // Draw active categories
+      state.categories.forEach(cat => {
+        if (cat.percent <= 0) return;
+        const sliceAngle = (cat.percent / 100) * (Math.PI * 2);
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, outerRadius, currentAngle, currentAngle + sliceAngle);
+        ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = cat.color;
+        ctx.fill();
+
+        currentAngle += sliceAngle;
+      });
+
+      // Draw background segment for remaining percentage
+      const totalPercent = state.categories.reduce((a, b) => a + b.percent, 0);
+      if (totalPercent < 100) {
+        const remainingAngle = ((100 - totalPercent) / 100) * (Math.PI * 2);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, outerRadius, currentAngle, currentAngle + remainingAngle);
+        ctx.arc(centerX, centerY, innerRadius, currentAngle + remainingAngle, currentAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = '#e8e4d9';
+        ctx.fill();
+      }
+    }
+
+    // Initialize application
+    loadSavedData();
+    render();
+  </script>
+</body>
+</html>
