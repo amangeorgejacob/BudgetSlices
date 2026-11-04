@@ -144,9 +144,8 @@
       color: white;
       padding: 28px;
       border-radius: 20px;
-      min-width: 320px;
+      min-width: 340px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      cursor: pointer;
     }
 
     .card-dark-header {
@@ -160,10 +159,32 @@
       gap: 6px;
     }
 
-    .amount-display {
+    /* Inline Edit Container & Input Field */
+    .income-edit-box {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      border: 1.5px solid #dca052;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .income-currency-symbol {
       font-size: 2.5rem;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-right: 8px;
+    }
+
+    .income-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 600;
+      width: 100%;
+      font-family: inherit;
     }
 
     .card-dark-footer {
@@ -519,14 +540,17 @@
         <p>Start with what you have. Shape it into a plan that feels right for your life.</p>
       </div>
       
-      <!-- Total Available Card -->
-      <div class="card-dark" id="incomeCard" title="Click to change your take-home amount">
+      <!-- Total Available Card with Inline Editable Input -->
+      <div class="card-dark">
         <div class="card-dark-header">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5H10.5a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3H9"/></svg>
           AVAILABLE TO PLAN
         </div>
-        <div class="amount-display" id="totalIncomeDisplay">$ 65.82</div>
-        <div class="card-dark-footer">Your take-home amount for this plan (click to edit)</div>
+        <div class="income-edit-box">
+          <span class="income-currency-symbol">$</span>
+          <input type="number" step="0.01" class="income-input" id="incomeInput" value="65.82" />
+        </div>
+        <div class="card-dark-footer">Your take-home amount for this plan</div>
       </div>
     </div>
 
@@ -634,8 +658,7 @@
     }
 
     // DOM Elements
-    const incomeCard = document.getElementById('incomeCard');
-    const totalIncomeDisplay = document.getElementById('totalIncomeDisplay');
+    const incomeInput = document.getElementById('incomeInput');
     const allocatedPercentDisplay = document.getElementById('allocatedPercentDisplay');
     const allocatedAmountDisplay = document.getElementById('allocatedAmountDisplay');
     const availableAmountDisplay = document.getElementById('availableAmountDisplay');
@@ -653,14 +676,12 @@
     const canvas = document.getElementById('donutChart');
     const ctx = canvas.getContext('2d');
 
-    // Change Income prompt
-    incomeCard.addEventListener('click', () => {
-      const val = prompt("Enter your monthly take-home income ($):", state.income);
-      if (val !== null && !isNaN(val) && parseFloat(val) >= 0) {
-        state.income = parseFloat(val);
-        saveState();
-        updateCalculationsAndChart();
-      }
+    // Live Inline Income Input Handler
+    incomeInput.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state.income = isNaN(val) || val < 0 ? 0 : val;
+      saveState();
+      updateCalculationsAndChart();
     });
 
     // Add category handler
@@ -682,7 +703,7 @@
       updateCalculationsAndChart();
     });
 
-    // Build DOM elements for categories only when needed (init or add/delete)
+    // Build DOM elements for categories
     function buildCategoryDOMList() {
       categoryContainer.innerHTML = '';
 
@@ -737,7 +758,7 @@
       });
     }
 
-    // Update calculations, chart, and text dynamically without recreating DOM inputs
+    // Update calculations, chart, and text dynamically
     function updateCalculationsAndChart() {
       const totalPercent = state.categories.reduce((acc, c) => acc + c.percent, 0);
       const allocatedDollars = (state.income * (totalPercent / 100));
@@ -745,7 +766,6 @@
       const remainingDollars = state.income - allocatedDollars;
 
       // Update Top Summaries
-      totalIncomeDisplay.textContent = `$ ${state.income.toFixed(2)}`;
       allocatedPercentDisplay.textContent = `${totalPercent.toFixed(1)}%`;
       allocatedAmountDisplay.textContent = `$${allocatedDollars.toFixed(2)} assigned`;
       availableAmountDisplay.textContent = `$${Math.abs(remainingDollars).toFixed(2)}`;
@@ -864,6 +884,7 @@
 
     // Initialize application
     loadSavedData();
+    incomeInput.value = state.income;
     buildCategoryDOMList();
     updateCalculationsAndChart();
   </script>
