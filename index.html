@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BudgetSlices - Your Money, With Purpose</title>
   <style>
     :root {
@@ -65,6 +65,7 @@
       align-items: center;
       justify-content: center;
       color: white;
+      flex-shrink: 0;
     }
 
     .logo-text h1 {
@@ -90,6 +91,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
     }
 
     .badge-saved::before {
@@ -166,7 +168,7 @@
       margin-bottom: 16px;
       border: 1.5px solid #dca052;
       padding: 4px 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       background-color: rgba(255, 255, 255, 0.05);
     }
 
@@ -185,6 +187,16 @@
       font-weight: 600;
       width: 100%;
       font-family: inherit;
+    }
+
+    /* Hide number input spinners */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
     }
 
     .card-dark-footer {
@@ -294,7 +306,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      width: 200px;
+      width: 180px;
+      flex-shrink: 0;
     }
 
     .cat-dot {
@@ -307,6 +320,7 @@
     .cat-name {
       font-weight: 600;
       font-size: 0.95rem;
+      word-break: break-word;
     }
 
     .slider-group {
@@ -320,8 +334,8 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 6px;
-      border-radius: 3px;
+      height: 8px;
+      border-radius: 4px;
       background: #e8e4d9;
       outline: none;
       cursor: pointer;
@@ -330,8 +344,8 @@
     .custom-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: #ffffff;
       border: 3px solid currentColor;
@@ -355,15 +369,41 @@
       align-items: center;
       gap: 16px;
       text-align: right;
+      flex-shrink: 0;
     }
 
-    .cat-percent {
+    /* Editable Percentage Box */
+    .cat-percent-box {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 2px;
+    }
+
+    .cat-percent-input {
+      width: 50px;
       font-size: 1.2rem;
       font-weight: 700;
+      text-align: right;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-dark);
+      padding: 2px 4px;
+      outline: none;
+      transition: border-color 0.2s, background-color 0.2s;
     }
 
-    .cat-percent span {
-      font-size: 0.8rem;
+    .cat-percent-input:focus,
+    .cat-percent-input:hover {
+      border-color: #d1cbdc;
+      background-color: #f9f8f4;
+    }
+
+    .cat-percent-symbol {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-dark);
     }
 
     .cat-dollar {
@@ -376,14 +416,16 @@
       border: none;
       color: #b8bdba;
       cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
+      padding: 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
+      justify-content: center;
     }
 
     .btn-delete:hover {
       color: var(--red-text);
+      background-color: #f5f0f0;
     }
 
     /* Add Category Bar */
@@ -398,7 +440,7 @@
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 14px 20px;
-      font-size: 0.9rem;
+      font-size: 16px; /* Prevents zoom on mobile Safari */
       outline: none;
       color: var(--text-dark);
     }
@@ -420,6 +462,7 @@
       align-items: center;
       gap: 6px;
       transition: background-color 0.2s;
+      white-space: nowrap;
     }
 
     .btn-add:hover {
@@ -431,6 +474,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 20px;
       margin-top: 10px;
     }
 
@@ -441,6 +485,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .canvas-text {
@@ -491,7 +536,7 @@
     .breakdown-right {
       display: flex;
       align-items: center;
-      gap: 40px;
+      gap: 30px;
     }
 
     .breakdown-percent {
@@ -509,6 +554,96 @@
       font-size: 0.85rem;
       color: var(--text-muted);
       margin-top: 20px;
+    }
+
+    /* ==========================================
+       MOBILE RESPONSIVE MEDIA QUERIES
+       ========================================== */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 12px 60px 12px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .hero {
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .hero-left h2 {
+        font-size: 2.2rem;
+      }
+
+      .card-dark {
+        min-width: 100%;
+        width: 100%;
+        padding: 20px;
+      }
+
+      .income-currency-symbol,
+      .income-input {
+        font-size: 2rem;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 18px;
+      }
+
+      .section-card {
+        padding: 20px 16px;
+      }
+
+      .category-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      .cat-name-group {
+        width: 100%;
+      }
+
+      .cat-value-group {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .cat-value-group > div {
+        text-align: left;
+      }
+
+      .cat-percent-box {
+        justify-content: flex-start;
+      }
+
+      .add-category-row {
+        flex-direction: column;
+      }
+
+      .btn-add {
+        height: 48px;
+        justify-content: center;
+      }
+
+      .chart-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .breakdown-table {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -540,7 +675,7 @@
         <p>Start with what you have. Shape it into a plan that feels right for your life.</p>
       </div>
       
-      <!-- Total Available Card with Inline Editable Input -->
+      <!-- Total Available Card -->
       <div class="card-dark">
         <div class="card-dark-header">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5H10.5a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3H9"/></svg>
@@ -548,7 +683,7 @@
         </div>
         <div class="income-edit-box">
           <span class="income-currency-symbol">$</span>
-          <input type="number" step="0.01" class="income-input" id="incomeInput" value="65.82" />
+          <input type="number" step="0.01" class="income-input" id="incomeInput" value="65.82" inputmode="decimal" />
         </div>
         <div class="card-dark-footer">Your take-home amount for this plan</div>
       </div>
@@ -727,7 +862,10 @@
           </div>
           <div class="cat-value-group">
             <div>
-              <div class="cat-percent"><span class="pct-val">${cat.percent}</span><span>%</span></div>
+              <div class="cat-percent-box">
+                <input type="number" min="0" max="100" class="cat-percent-input" value="${cat.percent}" inputmode="numeric" />
+                <span class="cat-percent-symbol">%</span>
+              </div>
               <div class="cat-dollar">$0.00</div>
             </div>
             <button class="btn-delete" title="Delete category">
@@ -737,11 +875,26 @@
         `;
 
         const slider = item.querySelector('.custom-slider');
+        const percentInput = item.querySelector('.cat-percent-input');
 
         // Smooth Dragging Input Event
         slider.addEventListener('input', (e) => {
-          const val = parseInt(e.target.value, 10);
+          const val = parseInt(e.target.value, 10) || 0;
           cat.percent = val;
+          percentInput.value = val;
+          saveState();
+          updateCalculationsAndChart();
+        });
+
+        // Direct Numerical Input Event for Percentage Box
+        percentInput.addEventListener('input', (e) => {
+          let val = parseInt(e.target.value, 10);
+          if (isNaN(val)) val = 0;
+          if (val > 100) val = 100;
+          if (val < 0) val = 0;
+
+          cat.percent = val;
+          slider.value = val;
           saveState();
           updateCalculationsAndChart();
         });
@@ -798,14 +951,19 @@
         if (!item) return;
 
         const slider = item.querySelector('.custom-slider');
-        const pctVal = item.querySelector('.pct-val');
+        const percentInput = item.querySelector('.cat-percent-input');
         const dollarVal = item.querySelector('.cat-dollar');
 
         const catDollars = (state.income * (cat.percent / 100)).toFixed(2);
 
         slider.value = cat.percent;
         slider.style.background = `linear-gradient(to right, ${cat.color} 0%, ${cat.color} ${cat.percent}%, #e8e4d9 ${cat.percent}%, #e8e4d9 100%)`;
-        pctVal.textContent = cat.percent;
+        
+        // Update numerical input value if not currently focused to avoid typing jump
+        if (document.activeElement !== percentInput) {
+          percentInput.value = cat.percent;
+        }
+        
         dollarVal.textContent = `$${catDollars}`;
       });
 
