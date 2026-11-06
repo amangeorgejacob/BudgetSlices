@@ -81,6 +81,52 @@
       color: var(--text-muted);
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Preset Toolbar */
+    .preset-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: white;
+      border: 1px solid #e2ded4;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .preset-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .btn-preset-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green-dark);
+      padding: 4px 8px;
+      border-radius: 12px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-preset-action:hover {
+      background-color: var(--green-light-bg);
+    }
+
     .badge-saved {
       background-color: white;
       border: 1px solid #e2ded4;
@@ -372,7 +418,6 @@
       flex-shrink: 0;
     }
 
-    /* Editable Percentage Box */
     .cat-percent-box {
       display: flex;
       align-items: center;
@@ -440,7 +485,7 @@
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 14px 20px;
-      font-size: 16px; /* Prevents zoom on mobile Safari */
+      font-size: 16px;
       outline: none;
       color: var(--text-dark);
     }
@@ -570,6 +615,11 @@
         gap: 12px;
       }
 
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
       .hero {
         flex-direction: column;
         gap: 24px;
@@ -661,7 +711,15 @@
           <span>YOUR MONEY, WITH PURPOSE</span>
         </div>
       </div>
-      <div class="badge-saved">Saved on this device</div>
+      <div class="header-right">
+        <!-- Preset Selector Toolbar -->
+        <div class="preset-bar">
+          <select id="presetSelect" class="preset-select" title="Switch budget setup"></select>
+          <button class="btn-preset-action" id="newPresetBtn">+ New Setup</button>
+          <button class="btn-preset-action" id="deletePresetBtn" title="Delete current preset">Delete</button>
+        </div>
+        <div class="badge-saved">Saved</div>
+      </div>
     </header>
 
     <!-- Hero -->
@@ -769,30 +827,65 @@
   <script>
     const PALETTE = ["#2d5a49", "#dca052", "#5c79a0", "#8e6da0", "#a05c68"];
 
-    let state = {
-      income: 65.82,
-      categories: [
-        { id: '1', name: 'Invesments', percent: 65, color: '#2d5a49' },
-        { id: '2', name: 'Fun stuff', percent: 35, color: '#dca052' }
-      ]
+    // App state managing multiple presets
+    let appData = {
+      currentPresetId: 'default_plan',
+      presets: {
+        'default_plan': {
+          name: 'My Default Plan',
+          income: 65.82,
+          categories: [
+            { id: '1', name: 'Investments', percent: 65, color: '#2d5a49' },
+            { id: '2', name: 'Fun stuff', percent: 35, color: '#dca052' }
+          ]
+        }
+      }
     };
 
+    function getCurrentPreset() {
+      return appData.presets[appData.currentPresetId];
+    }
+
     function loadSavedData() {
-      const saved = localStorage.getItem('budget_slices_data');
+      const saved = localStorage.getItem('budget_slices_multidata');
       if (saved) {
         try {
-          state = JSON.parse(saved);
+          appData = JSON.parse(saved);
         } catch(e) {
-          console.error("Could not parse saved local state", e);
+          console.error("Could not parse multi-preset local state", e);
         }
+      } else {
+        // Fallback migration: check if old single-preset key exists
+        const oldSaved = localStorage.getItem('budget_slices_data');
+        if (oldSaved) {
+          try {
+            const oldState = JSON.parse(oldSaved);
+            appData.presets['default_plan'] = {
+              name: 'My Default Plan',
+              income: oldState.income || 65.82,
+              categories: oldState.categories || []
+            };
+            saveAppData();
+          } catch(e) {
+            console.error("Migration failed", e);
+          }
+        }
+      }
+
+      // Ensure currentPresetId exists
+      if (!appData.presets[appData.currentPresetId]) {
+        appData.currentPresetId = Object.keys(appData.presets)[0] || 'default_plan';
       }
     }
 
-    function saveState() {
-      localStorage.setItem('budget_slices_data', JSON.stringify(state));
+    function saveAppData() {
+      localStorage.setItem('budget_slices_multidata', JSON.stringify(appData));
     }
 
     // DOM Elements
+    const presetSelect = document.getElementById('presetSelect');
+    const newPresetBtn = document.getElementById('newPresetBtn');
+    const deletePresetBtn = document.getElementById('deletePresetBtn');
     const incomeInput = document.getElementById('incomeInput');
     const allocatedPercentDisplay = document.getElementById('allocatedPercentDisplay');
     const allocatedAmountDisplay = document.getElementById('allocatedAmountDisplay');
@@ -811,11 +904,69 @@
     const canvas = document.getElementById('donutChart');
     const ctx = canvas.getContext('2d');
 
+    // Populate Preset Dropdown Selector
+    function updatePresetDropdown() {
+      presetSelect.innerHTML = '';
+      Object.keys(appData.presets).forEach(id => {
+        const preset = appData.presets[id];
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = preset.name;
+        if (id === appData.currentPresetId) {
+          option.selected = true;
+        }
+        presetSelect.appendChild(option);
+      });
+    }
+
+    // Switch Preset Event
+    presetSelect.addEventListener('change', (e) => {
+      appData.currentPresetId = e.target.value;
+      saveAppData();
+      refreshUI();
+    });
+
+    // Create New Preset Event
+    newPresetBtn.addEventListener('click', () => {
+      const presetName = prompt("Enter a name for your new setup (e.g., Paycheck 2, Vacation Budget):");
+      if (!presetName || !presetName.trim()) return;
+
+      const newId = 'preset_' + Date.now();
+      appData.presets[newId] = {
+        name: presetName.trim(),
+        income: 100.00,
+        categories: [
+          { id: '1', name: 'Essentials', percent: 50, color: '#2d5a49' },
+          { id: '2', name: 'Savings', percent: 50, color: '#dca052' }
+        ]
+      };
+      appData.currentPresetId = newId;
+      saveAppData();
+      refreshUI();
+    });
+
+    // Delete Current Preset Event
+    deletePresetBtn.addEventListener('click', () => {
+      const presetKeys = Object.keys(appData.presets);
+      if (presetKeys.length <= 1) {
+        alert("You must keep at least one active setup!");
+        return;
+      }
+
+      const currentPreset = getCurrentPreset();
+      if (confirm(`Are you sure you want to delete "${currentPreset.name}"?`)) {
+        delete appData.presets[appData.currentPresetId];
+        appData.currentPresetId = Object.keys(appData.presets)[0];
+        saveAppData();
+        refreshUI();
+      }
+    });
+
     // Live Inline Income Input Handler
     incomeInput.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
-      state.income = isNaN(val) || val < 0 ? 0 : val;
-      saveState();
+      getCurrentPreset().income = isNaN(val) || val < 0 ? 0 : val;
+      saveAppData();
       updateCalculationsAndChart();
     });
 
@@ -824,8 +975,9 @@
       const name = newCatNameInput.value.trim();
       if (!name) return;
 
-      const color = PALETTE[state.categories.length % PALETTE.length];
-      state.categories.push({
+      const preset = getCurrentPreset();
+      const color = PALETTE[preset.categories.length % PALETTE.length];
+      preset.categories.push({
         id: Date.now().toString(),
         name: name,
         percent: 0,
@@ -833,7 +985,7 @@
       });
 
       newCatNameInput.value = '';
-      saveState();
+      saveAppData();
       buildCategoryDOMList();
       updateCalculationsAndChart();
     });
@@ -841,8 +993,9 @@
     // Build DOM elements for categories
     function buildCategoryDOMList() {
       categoryContainer.innerHTML = '';
+      const preset = getCurrentPreset();
 
-      state.categories.forEach((cat, index) => {
+      preset.categories.forEach((cat, index) => {
         const item = document.createElement('div');
         item.className = 'category-item';
         item.dataset.id = cat.id;
@@ -882,7 +1035,7 @@
           const val = parseInt(e.target.value, 10) || 0;
           cat.percent = val;
           percentInput.value = val;
-          saveState();
+          saveAppData();
           updateCalculationsAndChart();
         });
 
@@ -895,14 +1048,14 @@
 
           cat.percent = val;
           slider.value = val;
-          saveState();
+          saveAppData();
           updateCalculationsAndChart();
         });
 
         // Delete Event
         item.querySelector('.btn-delete').addEventListener('click', () => {
-          state.categories.splice(index, 1);
-          saveState();
+          preset.categories.splice(index, 1);
+          saveAppData();
           buildCategoryDOMList();
           updateCalculationsAndChart();
         });
@@ -913,16 +1066,17 @@
 
     // Update calculations, chart, and text dynamically
     function updateCalculationsAndChart() {
-      const totalPercent = state.categories.reduce((acc, c) => acc + c.percent, 0);
-      const allocatedDollars = (state.income * (totalPercent / 100));
+      const preset = getCurrentPreset();
+      const totalPercent = preset.categories.reduce((acc, c) => acc + c.percent, 0);
+      const allocatedDollars = (preset.income * (totalPercent / 100));
       const remainingPercent = 100 - totalPercent;
-      const remainingDollars = state.income - allocatedDollars;
+      const remainingDollars = preset.income - allocatedDollars;
 
       // Update Top Summaries
       allocatedPercentDisplay.textContent = `${totalPercent.toFixed(1)}%`;
       allocatedAmountDisplay.textContent = `$${allocatedDollars.toFixed(2)} assigned`;
       availableAmountDisplay.textContent = `$${Math.abs(remainingDollars).toFixed(2)}`;
-      totalSummaryBadge.textContent = `$${state.income.toFixed(2)} total`;
+      totalSummaryBadge.textContent = `$${preset.income.toFixed(2)} total`;
       donutCenterPercent.textContent = `${totalPercent}%`;
 
       if (totalPercent === 100) {
@@ -946,7 +1100,7 @@
       }
 
       // Update Individual Category DOM values & Slider CSS Gradient
-      state.categories.forEach(cat => {
+      preset.categories.forEach(cat => {
         const item = categoryContainer.querySelector(`[data-id="${cat.id}"]`);
         if (!item) return;
 
@@ -954,12 +1108,11 @@
         const percentInput = item.querySelector('.cat-percent-input');
         const dollarVal = item.querySelector('.cat-dollar');
 
-        const catDollars = (state.income * (cat.percent / 100)).toFixed(2);
+        const catDollars = (preset.income * (cat.percent / 100)).toFixed(2);
 
         slider.value = cat.percent;
         slider.style.background = `linear-gradient(to right, ${cat.color} 0%, ${cat.color} ${cat.percent}%, #e8e4d9 ${cat.percent}%, #e8e4d9 100%)`;
         
-        // Update numerical input value if not currently focused to avoid typing jump
         if (document.activeElement !== percentInput) {
           percentInput.value = cat.percent;
         }
@@ -969,8 +1122,8 @@
 
       // Update Breakdown List
       breakdownList.innerHTML = '';
-      state.categories.forEach(cat => {
-        const amt = (state.income * (cat.percent / 100)).toFixed(2);
+      preset.categories.forEach(cat => {
+        const amt = (preset.income * (cat.percent / 100)).toFixed(2);
         const row = document.createElement('div');
         row.className = 'breakdown-row';
         row.innerHTML = `
@@ -1000,7 +1153,6 @@
       `;
       breakdownList.appendChild(unallocatedRow);
 
-      // Draw Donut
       drawChart();
     }
 
@@ -1013,8 +1165,9 @@
       const innerRadius = 64;
 
       let currentAngle = -Math.PI / 2;
+      const preset = getCurrentPreset();
 
-      state.categories.forEach(cat => {
+      preset.categories.forEach(cat => {
         if (cat.percent <= 0) return;
         const sliceAngle = (cat.percent / 100) * (Math.PI * 2);
 
@@ -1028,7 +1181,7 @@
         currentAngle += sliceAngle;
       });
 
-      const totalPercent = state.categories.reduce((a, b) => a + b.percent, 0);
+      const totalPercent = preset.categories.reduce((a, b) => a + b.percent, 0);
       if (totalPercent < 100) {
         const remainingAngle = ((100 - totalPercent) / 100) * (Math.PI * 2);
         ctx.beginPath();
@@ -1040,11 +1193,17 @@
       }
     }
 
+    function refreshUI() {
+      updatePresetDropdown();
+      const preset = getCurrentPreset();
+      incomeInput.value = preset.income;
+      buildCategoryDOMList();
+      updateCalculationsAndChart();
+    }
+
     // Initialize application
     loadSavedData();
-    incomeInput.value = state.income;
-    buildCategoryDOMList();
-    updateCalculationsAndChart();
+    refreshUI();
   </script>
 </body>
 </html>
